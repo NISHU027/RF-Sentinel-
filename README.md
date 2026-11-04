@@ -1,82 +1,93 @@
 # RF Sentinel
 
-**RF Sentinel** is a portable, low-cost wireless activity monitoring project built around an **ESP32-S3**. It scans nearby Wi-Fi networks and Bluetooth Low Energy (BLE) devices, saves observations to a microSD card as CSV, and lets the user compare activity from before and after a chosen event or period.
+**RF Sentinel** is a student research prototype exploring passive, non-camera sensing of changes in ambient **4G/5G cellular RF signals**. The research goal is to study whether measured changes can correspond to movement or environmental changes in controlled spaces.
 
-> **Project status:** The hardware is partially assembled and testing is pending. This README describes the confirmed project design and intended behavior; it does not claim validated detection accuracy or completed testing.
+> **Status:** The supplied project material says the cellular RF sensing research and high-level architecture are complete. Hardware sourcing and integration are in progress. A compatible 4G/5G RF module and antenna remain the key sourcing blocker; controlled RF sampling and performance validation are pending. No sensing accuracy, detection range, or validated movement-detection performance is claimed.
 
-## Project goals
+## Project concept
 
-- Observe nearby Wi-Fi and BLE activity using the ESP32-S3.
-- Record scan observations locally for later review.
-- Establish a **BEFORE** baseline, collect an **AFTER** scan, and use **COMPARE** to highlight changes such as newly observed devices.
-- Provide a simple, portable interface through an OLED display and physical buttons.
+The proposed measurement flow is:
 
-RF Sentinel is intended as a wireless-environment monitoring aid. A change in scan results may warrant investigation, but it does not establish that a device is hidden, unauthorized, or malicious.
+`Ambient cellular RF → compatible RF front-end / modem / SDR → measurements or samples → analysis and comparison`
 
-## Confirmed hardware
+An **ESP32 controller** is planned for supported peripheral control, OLED status, and logging. The external RF hardware is essential: an ESP32 alone is not a general-purpose 4G/5G receiver. Depending on the selected RF hardware, data acquisition or signal processing may require its vendor software or a host computer.
 
-- ESP32-S3 development board
-- OLED display
-- Physical buttons
-- MicroSD card and compatible reader/interface
+The research aims to explore changes in RF observations under controlled conditions. A measured difference alone does not prove movement or identify its cause.
 
-No dedicated wideband RF receiver or external RF detector is part of the confirmed current design. The current scope is Wi-Fi and BLE activity that the ESP32-S3 can observe.
+## Proposed system components
 
-## Intended operation
+| Component | Intended role | Status / detail to confirm |
+| --- | --- | --- |
+| ESP32 controller | Peripheral control, OLED, logging, and prototype interface | Architecture defined; exact model and interfaces not specified |
+| 4G/5G RF front-end, modem, or SDR | Provides access to cellular RF measurements or samples | Not yet sourced; key dependency |
+| Cellular antenna | Receives target bands | Must match the selected receiver and bands; not yet sourced |
+| OLED display | Local status and available results | Listed; exact model/interface unspecified |
+| Power circuitry | Provides stable power to controller and RF hardware | Ratings depend on selected components |
+| RF cables and adapters | Connect antenna and receiver | Connector and coax types depend on selected hardware |
 
-1. **BEFORE:** Scan the environment and save a baseline.
-2. **AFTER:** Scan again at the later time or after the event.
-3. **COMPARE:** Compare the two sets of observations and show changes.
-4. **CSV logging:** Store scan records on the microSD card for offline review.
+The exact cellular bands, bandwidth, sample format, receiver interface, and pin assignments remain undecided until the RF module is selected. The final circuit diagram is pending and must be verified against component documentation.
 
-Depending on what the ESP32-S3 scan APIs expose, records may include available identifiers, signal strength (RSSI), and timestamps. Exact CSV columns and display behavior should be documented after implementation and testing confirm them.
+## Software and tools
 
-## What is needed
+The supplied project references identify these tools as selected or possible:
 
-### Hardware
+- **Arduino IDE 2** for developing, compiling, and uploading ESP32 firmware.
+- **ESP-IDF or Arduino C/C++** for controller firmware, OLED, interfaces, and logging; the final framework choice remains to be recorded.
+- **Vendor SDK/API** for the selected RF module or modem.
+- **GNU Radio or SoapySDR** as possible SDR integration tools, depending on the selected hardware.
+- **Python: NumPy, SciPy, Pandas, and Matplotlib** for planned data handling, signal-feature analysis, and plots.
+- **Cirkit Designer** for circuit planning and wiring validation.
 
-- ESP32-S3 development board
-- OLED display compatible with the chosen interface (for example, I²C or SPI)
-- Buttons for menu and mode selection
-- MicroSD card module or board interface, plus a microSD card
-- Connecting wires, a stable power source, and any adapters required by the selected board
-- Optional enclosure for portable use
+These are project workflow references, not confirmation that the acquisition or analysis software has been implemented and tested.
 
-Pin assignments, voltage levels, and wiring depend on the specific ESP32-S3 board and peripheral modules; confirm them against the relevant board/module documentation before connecting hardware.
+## Proposed workflow
 
-### Software and tools
+1. Select a compatible RF module, modem, or SDR based on the measurements needed, supported bands, interface, cost, and availability.
+2. Select a matching cellular antenna, RF connectors, cables, and suitable power supply.
+3. Confirm what measurements or samples the chosen hardware exposes and how the ESP32 or a host computer communicates with it.
+4. Complete and verify the circuit design using the selected components' documentation.
+5. Implement acquisition, status display, and logging for the available measurement path.
+6. Record a labeled baseline under controlled conditions.
+7. Introduce one documented environmental change and collect another observation using the same configuration where possible.
+8. Compare the recorded data, repeat trials, and report observed differences with their limitations.
 
-- A development environment that supports the ESP32-S3, such as Arduino IDE or ESP-IDF (choose one for the project)
-- ESP32-S3 board support package and USB/serial drivers as required by the computer
-- Wi-Fi scanning and BLE scanning APIs/libraries compatible with the chosen framework
-- OLED display library compatible with the display controller and bus
-- SD or FAT filesystem support for writing CSV files
-- USB data cable and a computer for building, flashing, and serial debugging
+The system should report connection, acquisition, or storage errors as errors; missing data should not be treated as a detection.
 
-The exact framework versions, library names, and installation steps remain to be confirmed by the implementation.
+## Current progress
 
-### Data and testing
+- [x] Research area identified: cellular RF sensing and 5G Integrated Sensing and Communication (ISAC)
+- [x] High-level ESP32 + RF hardware + antenna + OLED architecture defined
+- [x] Arduino IDE and Cirkit Designer selected in project references
+- [ ] Source a compatible 4G/5G RF module or SDR and antenna
+- [ ] Confirm RF bands, exposed measurements, interfaces, connectors, and power requirements
+- [ ] Complete and verify the final circuit
+- [ ] Integrate hardware and implement acquisition and logging
+- [ ] Collect controlled baseline and changed-condition observations
+- [ ] Evaluate repeatability and sensing performance
 
-- A microSD card formatted in a filesystem supported by the selected SD library
-- A repeatable scan procedure and a clear definition of what counts as a “new” or changed observation
-- Test runs in a controlled environment to check Wi-Fi/BLE scans, display controls, CSV integrity, and BEFORE/AFTER comparison
-- Validation of practical limitations such as scan duration, missed or rotating identifiers, signal-strength variation, and false alerts
+## Earlier concept in the proposal
 
-## Current status and next steps
+An earlier mini-project proposal describes a different, simpler design using an **ESP32 and AD8307 RF detector** for analog signal-strength thresholding, with an OLED, LEDs, buzzer, and a proposed dashboard. It includes example thresholds, estimated component costs, and circuit pin suggestions. These are proposal details only: the later project report identifies the research direction as 4G/5G cellular RF sensing with a compatible external RF front-end/modem/SDR, and says the RF hardware has not yet been sourced. Do not treat the AD8307 design, its pinout, threshold examples, dashboard, or budget as the confirmed current build.
 
-- [x] Project concept and core hardware identified
-- [x] BEFORE / AFTER / COMPARE workflow defined
-- [x] CSV logging identified as a feature
-- [ ] Complete hardware assembly
-- [ ] Confirm board pinout, display type, and SD interface
-- [ ] Implement and verify Wi-Fi and BLE scans
-- [ ] Implement OLED/button menus and CSV logging
-- [ ] Test and document the comparison rules and limitations
+The later project report also mentions an ESP32-S3 Wi-Fi/BLE scanning concept in other project notes. That is distinct from the cellular RF sensing objective documented in the supplied project slides and report; this README follows the supplied 4G/5G research direction.
 
-## Responsible use
+## Limitations and responsible use
 
-Use RF Sentinel only where you have permission to monitor the environment. Follow applicable radio, privacy, and data-protection rules. The project records observable wireless metadata; it is not intended to intercept or decode private communications, transmit RF signals, or interfere with wireless services.
+- The RF receiver and antenna determine which signals and measurements are accessible.
+- A modem may expose only limited network metrics; an SDR's frequency coverage, bandwidth, and software support depend on the specific model.
+- RF changes may have multiple causes. Controlled, repeated experiments are needed before relating them to movement or environmental changes.
+- This research prototype is not a validated security, surveillance, or safety device and cannot identify a person or prove that a transmission is unauthorized.
+- Use authorized RF sources and follow applicable radio, privacy, and data-protection rules. Do not transmit or interfere with radio services.
 
-## Future scope
+## Reference tools
 
-Possible future work includes clearer anomaly scoring, improved summaries, and optional dedicated RF sensing hardware. These are not part of the confirmed current prototype.
+- [Arduino IDE 2](https://docs.arduino.cc/software/ide/)
+- [GNU Radio](https://www.gnuradio.org/)
+- [SoapySDR](https://github.com/pothosware/SoapySDR)
+- [NumPy](https://numpy.org/)
+- [SciPy](https://scipy.org/)
+- [Pandas](https://pandas.pydata.org/)
+- [Matplotlib](https://matplotlib.org/)
+- [Cirkit Designer project workspace](https://app.cirkitdesigner.com/project/a3692bd9-b74a-498f-81d4-1cef88412a6e)
+
+The supplied report does not provide complete citations for specific cellular RF sensing or 5G ISAC research papers. Add verified papers once selected and reviewed.
