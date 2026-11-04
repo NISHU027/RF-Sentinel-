@@ -1,57 +1,82 @@
 # RF Sentinel
 
-RF Sentinel is a low-cost RF activity monitoring and anomaly-detection project. Its goal is to observe radio-frequency activity, establish a baseline for the environment, and flag unusual changes for review.
+**RF Sentinel** is a portable, low-cost wireless activity monitoring project built around an **ESP32-S3**. It scans nearby Wi-Fi networks and Bluetooth Low Energy (BLE) devices, saves observations to a microSD card as CSV, and lets the user compare activity from before and after a chosen event or period.
 
-> **Project status:** The repository currently contains a project description only. The components and workflow below are a planning checklist, not claims that these features are already implemented.
+> **Project status:** The hardware is partially assembled and testing is pending. This README describes the confirmed project design and intended behavior; it does not claim validated detection accuracy or completed testing.
 
-## What the project is intended to do
+## Project goals
 
-- Capture RF energy or spectrum measurements over a chosen frequency range.
-- Record time-stamped observations so activity can be compared over time.
-- Visualize activity and highlight readings that differ from a baseline.
-- Keep the design affordable and modular, with room to use more capable hardware where needed.
+- Observe nearby Wi-Fi and BLE activity using the ESP32-S3.
+- Record scan observations locally for later review.
+- Establish a **BEFORE** baseline, collect an **AFTER** scan, and use **COMPARE** to highlight changes such as newly observed devices.
+- Provide a simple, portable interface through an OLED display and physical buttons.
 
-RF monitoring reveals signal activity, not necessarily the content or identity of a transmitter. Results depend on the receiver, antenna, local environment, and applicable radio regulations.
+RF Sentinel is intended as a wireless-environment monitoring aid. A change in scan results may warrant investigation, but it does not establish that a device is hidden, unauthorized, or malicious.
+
+## Confirmed hardware
+
+- ESP32-S3 development board
+- OLED display
+- Physical buttons
+- MicroSD card and compatible reader/interface
+
+No dedicated wideband RF receiver or external RF detector is part of the confirmed current design. The current scope is Wi-Fi and BLE activity that the ESP32-S3 can observe.
+
+## Intended operation
+
+1. **BEFORE:** Scan the environment and save a baseline.
+2. **AFTER:** Scan again at the later time or after the event.
+3. **COMPARE:** Compare the two sets of observations and show changes.
+4. **CSV logging:** Store scan records on the microSD card for offline review.
+
+Depending on what the ESP32-S3 scan APIs expose, records may include available identifiers, signal strength (RSSI), and timestamps. Exact CSV columns and display behavior should be documented after implementation and testing confirm them.
 
 ## What is needed
 
 ### Hardware
 
-- **RF receiver:** An SDR (software-defined radio) supported by the selected software. Entry-level USB SDR hardware can be used for receive-only experiments; wider frequency coverage or better dynamic range may require a higher-spec device.
-- **Antenna:** An antenna suitable for the frequencies being observed. One antenna will not perform equally well across every band.
-- **Computer:** A laptop, desktop, or single-board computer with a USB port and enough storage for captured measurements.
-- **Optional accessories:** USB extension cable, antenna adapters, filters, and a low-noise amplifier, chosen for the intended band and local signal conditions.
+- ESP32-S3 development board
+- OLED display compatible with the chosen interface (for example, I²C or SPI)
+- Buttons for menu and mode selection
+- MicroSD card module or board interface, plus a microSD card
+- Connecting wires, a stable power source, and any adapters required by the selected board
+- Optional enclosure for portable use
 
-### Software
+Pin assignments, voltage levels, and wiring depend on the specific ESP32-S3 board and peripheral modules; confirm them against the relevant board/module documentation before connecting hardware.
 
-- Operating system and SDR driver supported by the receiver.
-- SDR capture and tuning software or libraries compatible with the device.
-- Analysis code for cleaning measurements, extracting features, and identifying outliers.
-- A way to store time-stamped measurements (for example, CSV or a small database).
-- Optional dashboard or plotting tool for reviewing spectrum and anomaly history.
+### Software and tools
 
-Specific package names and installation commands should be added once the receiver and implementation language are selected.
+- A development environment that supports the ESP32-S3, such as Arduino IDE or ESP-IDF (choose one for the project)
+- ESP32-S3 board support package and USB/serial drivers as required by the computer
+- Wi-Fi scanning and BLE scanning APIs/libraries compatible with the chosen framework
+- OLED display library compatible with the display controller and bus
+- SD or FAT filesystem support for writing CSV files
+- USB data cable and a computer for building, flashing, and serial debugging
 
-### Data and configuration
+The exact framework versions, library names, and installation steps remain to be confirmed by the implementation.
 
-- Frequency range(s), sampling rate, gain, and scan interval appropriate to the receiver and use case.
-- Baseline observations collected in the target environment.
-- A defined anomaly rule or model, with thresholds that can be tuned to reduce false alerts.
-- Storage limits and retention policy for captured data.
+### Data and testing
 
-## Suggested workflow
+- A microSD card formatted in a filesystem supported by the selected SD library
+- A repeatable scan procedure and a clear definition of what counts as a “new” or changed observation
+- Test runs in a controlled environment to check Wi-Fi/BLE scans, display controls, CSV integrity, and BEFORE/AFTER comparison
+- Validation of practical limitations such as scan duration, missed or rotating identifiers, signal-strength variation, and false alerts
 
-1. Choose a receiver and the frequency range to monitor.
-2. Install its driver and verify that ordinary receive measurements work.
-3. Capture a short sample and save it with timestamps and configuration details.
-4. Build a baseline from representative observations.
-5. Compare new observations with the baseline and flag deviations.
-6. Review flagged events and tune thresholds before relying on alerts.
+## Current status and next steps
 
-## Safety and responsible use
+- [x] Project concept and core hardware identified
+- [x] BEFORE / AFTER / COMPARE workflow defined
+- [x] CSV logging identified as a feature
+- [ ] Complete hardware assembly
+- [ ] Confirm board pinout, display type, and SD interface
+- [ ] Implement and verify Wi-Fi and BLE scans
+- [ ] Implement OLED/button menus and CSV logging
+- [ ] Test and document the comparison rules and limitations
 
-Use receive-only equipment unless you are specifically authorized to transmit. Follow local spectrum, privacy, and recording laws. Do not attempt to decode private communications or interfere with radio services. Check the receiver's frequency limits and local rules before operating.
+## Responsible use
 
-## Current repository state
+Use RF Sentinel only where you have permission to monitor the environment. Follow applicable radio, privacy, and data-protection rules. The project records observable wireless metadata; it is not intended to intercept or decode private communications, transmit RF signals, or interfere with wireless services.
 
-The repository is being set up. Add the implementation, supported receiver models, tested software versions, setup instructions, and example output as those are established.
+## Future scope
+
+Possible future work includes clearer anomaly scoring, improved summaries, and optional dedicated RF sensing hardware. These are not part of the confirmed current prototype.
